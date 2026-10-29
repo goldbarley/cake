@@ -58,5 +58,6 @@ _Bool find_cmd(const char *cmd)
 	}
 
 	free(memblk);
+	fprintf(stderr, "Error: Could not find %s\n", cmd);
 	return false;
 }
