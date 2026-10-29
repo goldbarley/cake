@@ -3,5 +3,5 @@
 int main(void)
 {
 	/* Test run. */
-	return find_cmd("cc");
+	return find_dir(".git");
 }

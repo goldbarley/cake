@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/stat.h>
 #include <unistd.h>
 
 #include "cake.h"
@@ -13,19 +14,12 @@ _Bool find_cmd(const char *cmd)
 		return false;
 
 	if (strchr(cmd, '/') && access(cmd, X_OK) == 0)
-	{
-		fprintf(stdout, "Found %s\n", cmd);
 		return true;
-	}
 
 	const size_t ncmd = strlen(cmd);
 	char *_path = getenv("PATH");
 	if (!_path)
-	{
-		fputs("Error: Could not get environment variable: PATH.\n",
-		      stderr);
 		return false;
-	}
 
 	const size_t npath = strlen(_path);
 	const size_t blksize = (npath << 1) + ncmd + _NULLCHAR_BUFFER_SPACE;
@@ -33,10 +27,7 @@ _Bool find_cmd(const char *cmd)
 
 	char *memblk = (char *) malloc(blksize);
 	if (!memblk)
-	{
-		fputs("Error: Memory allocation failed.\n", stderr);
 		return false;
-	}
 
 	char *memblk2 = memcpy(memblk, _path, npath);
 	memblk2[npath] = 0;
@@ -50,7 +41,6 @@ _Bool find_cmd(const char *cmd)
 
 		if (access(path, X_OK) == 0)
 		{
-			fprintf(stdout, "Found %s\n", path);
 			free(memblk);
 			return true;
 		}
@@ -58,6 +48,37 @@ _Bool find_cmd(const char *cmd)
 	}
 
 	free(memblk);
-	fprintf(stderr, "Error: Could not find %s\n", cmd);
 	return false;
+}
+
+#undef _NULLCHAR_BUFFER_SPACE
+
+static inline
+_Bool _fsstatus(const char *restrict path, struct stat *restrict s)
+{
+	if (!path || !s)
+		return false;
+
+	if (lstat(path, s) != 0)
+		return false;
+
+	if (S_ISLNK(s->st_mode))
+		if (stat(path, s) != 0)
+			return false;
+
+	return true;
+}
+
+_Bool find_dir(const char *path)
+{
+	struct stat s;
+
+	return _fsstatus(path, &s) && S_ISDIR(s.st_mode);
+}
+
+_Bool find_file(const char *path)
+{
+	struct stat s;
+
+	return _fsstatus(path, &s) && S_ISREG(s.st_mode);
 }
