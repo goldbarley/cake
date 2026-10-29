@@ -5,8 +5,7 @@
 
 #include "cake.h"
 
-#define _BUFFER_SPACE (64U)
-#define _NULLCHAR_BUFFER_SPACE (66U)
+#define _NULLCHAR_BUFFER_SPACE (2U)
 
 _Bool find_cmd(const char *cmd)
 {
@@ -19,6 +18,7 @@ _Bool find_cmd(const char *cmd)
 		return true;
 	}
 
+	const size_t ncmd = strlen(cmd);
 	char *_path = getenv("PATH");
 	if (!_path)
 	{
@@ -28,9 +28,10 @@ _Bool find_cmd(const char *cmd)
 	}
 
 	const size_t npath = strlen(_path);
-	const size_t nbuf = npath + _BUFFER_SPACE;
+	const size_t blksize = (npath << 1) + ncmd + _NULLCHAR_BUFFER_SPACE;
+	const size_t ndstbuf = blksize - npath;
 
-	char *memblk = (char *) malloc((npath << 1) + _NULLCHAR_BUFFER_SPACE);
+	char *memblk = (char *) malloc(blksize);
 	if (!memblk)
 	{
 		fputs("Error: Memory allocation failed.\n", stderr);
@@ -45,7 +46,7 @@ _Bool find_cmd(const char *cmd)
 	char *tok = strtok(memblk, ":");
 	while (tok)
 	{
-		snprintf(path, nbuf, "%s/%s", tok, cmd);
+		snprintf(path, ndstbuf, "%s/%s", tok, cmd);
 
 		if (access(path, X_OK) == 0)
 		{
