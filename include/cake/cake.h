@@ -49,23 +49,23 @@ typedef struct cmd_buffer_info
 	cmd_buffer_type_t type;
 } cmd_buffer_info_t;
 
-typedef struct cmdarg
+typedef struct str
 {
-	char *arg;
-	unsigned int n;
-} cmdarg_t;
+	char *s;
+	size_t len;
+} str_t;
+
+typedef struct str cmdarg_t;
 
 typedef struct cmd
 {
 	char *cmd;
 	cmdarg_t *args;
+	unsigned int argc;
 } cmd_t;
-
-void bake(void);
 
 int set_cc(const char *s);
 int set_projname(const char *s);
-
 int find_cmd(const char *cmd); /* DONE */
 int find_dir(const char *path); /* DONE */
 int find_file(const char *path); /* DONE */
@@ -73,8 +73,6 @@ int include_dir(const char *path); /* PENDING */
 int create_cmd_buffer(cmd_buffer_info_t *restrict info,
 		      cmd_buffer_t *restrict buffer); /* PENDING */
 int submit_cmd(cmd_t *cmd); /* PENDING */
-int exec_cmd(cmd_t *cmd);
-
 void done(void);
 
 #endif /* CAKE_H_ */
