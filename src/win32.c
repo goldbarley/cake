@@ -1,4 +1,4 @@
-#include "cake.h"
+#include "cake/cake.h"
 
 _Bool find_cmd(const char *cmd)
 {

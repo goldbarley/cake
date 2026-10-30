@@ -4,7 +4,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
-#include "cake.h"
+#include "cake/cake.h"
 
 #define _NULLCHAR_BUFFER_SPACE (2U)
 
