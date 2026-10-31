@@ -25,6 +25,8 @@
 #define restrict __restrict
 #endif /* __cplusplus */
 
+#define DISCARD(x) ((void)(x))
+
 /* Return codes */
 enum
 {
@@ -74,23 +76,48 @@ typedef struct cmd
 	unsigned int argc;
 } cmd_t;
 
+#define CAKE_DEFAULT_ALLOC_ALIGNMENT (_Alignof(max_align_t))
+
+typedef void *(*ptf_alloc_t)(size_t size, void *arg);
+typedef void *(*ptf_alignedalloc_t)(size_t size, size_t align, void *arg);
+typedef void (*ptf_free_t)(void *mem, void *arg);
+typedef void *(*ptf_realloc_t)(void *orig, size_t size, size_t align, void *arg);
+
+typedef struct alloccb
+{
+	ptf_alloc_t fp_alloc;
+	ptf_free_t fp_free;
+	ptf_realloc_t fp_realloc;
+	void *arg;
+} alloccb_t;
+
 typedef void *(*callback_t)(void *);
 
 CAKE_FORMAT_PRINTF(4, 5)
 void check_ret(int ret, callback_t errcb, void* arg, const char *msg, ...);
-int get_context(context_t **ctx);
-int set_cc(context_t *restrict ctx, const char *restrict s);
-int set_projname(context_t *restrict ctx, const char *restrict s);
+int get_context(context_t **restrict ctx, const alloccb_t *restrict alloc);
+int set_cc(context_t *restrict ctx, const char *restrict s,
+	   const alloccb_t *restrict alloc);
+int set_projname(context_t *restrict ctx, const char *restrict s,
+		 const alloccb_t *restrict alloc);
 const char *get_cc(context_t *ctx);
 const char *get_projname(context_t *ctx);
 int add_cmdargs(const char **args, cmdarg_t *argv, size_t argc);
-int find_cmd(const char *cmd); /* DONE */
-int find_dir(const char *path); /* DONE */
-int find_file(const char *path); /* DONE */
-int include_dir(const char *path); /* PENDING */
+/* POSIX: DONE, Win32: PENDING */
+int find_cmd(const char *cmd,
+	     const alloccb_t *restrict alloc);
+/* POSIX: DONE, Win32: PENDING */
+int find_dir(const char *path);
+/* POSIX: DONE, Win32: PENDING */
+int find_file(const char *path);
+/* PENDING */
+int include_dir(const char *path);
+/* PENDING */
 int create_cmd_buffer(cmd_buffer_info_t *restrict info,
-		      cmd_buffer_t *restrict buffer); /* PENDING */
-int submit_cmd(cmd_t *cmd); /* PENDING */
+		      cmd_buffer_t *restrict buffer);
+/* PENDING */
+int submit_cmd(cmd_t *cmd);
+/* PARTIALLY IMPLEMENTED */
 void done(context_t *ctx);
 
 #endif /* CAKE_H_ */

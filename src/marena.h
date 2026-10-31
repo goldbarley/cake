@@ -5,6 +5,7 @@
 #include <stddef.h>
 
 #include "cake/cake.h"
+#include "internal.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -19,22 +20,6 @@ struct marena
 	size_t offset;
 	bool uowned;
 };
-
-static inline
-bool align_up(size_t value, size_t align, size_t *result)
-{
-	if (!result || !align)
-		return false;
-
-	if ((align & (align - 1)))
-		return false;
-
-	if (value > SIZE_MAX - (align - 1))
-		return false;
-
-	*result = (value + align - 1) & ~(align - 1);
-	return true;
-}
 
 static inline
 int marena_construct(register struct marena *arena, size_t capacity)

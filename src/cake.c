@@ -6,7 +6,8 @@
 #include "internal.h"
 
 static inline
-int _copy_str(char **restrict dst, const char *restrict src)
+int _copy_str(char **restrict dst, const char *restrict src,
+	      const alloccb_t *alloc)
 {
 	size_t n = strlen(src);
 	char *p = malloc(++n);
@@ -48,7 +49,7 @@ void check_ret(int ret, callback_t errcb, void* arg, const char *msg, ...)
 		errcb(arg);
 }
 
-int get_context(context_t **ctx)
+int get_context(context_t **restrict ctx, const alloccb_t *restrict alloc)
 {
 	if (!ctx)
 		return RET_ERR;
@@ -63,14 +64,16 @@ int get_context(context_t **ctx)
 	return RET_OK;
 }
 
-int set_cc(context_t *restrict ctx, const char *restrict s)
+int set_cc(context_t *restrict ctx, const char *restrict s,
+	   const alloccb_t *restrict alloc)
 {
-	return _copy_str(&ctx->cc, s);
+	return _copy_str(&ctx->cc, s, alloc);
 }
 
-int set_projname(context_t *restrict ctx, const char *restrict s)
+int set_projname(context_t *restrict ctx, const char *restrict s,
+		 const alloccb_t *restrict alloc)
 {
-	return _copy_str(&ctx->projname, s);
+	return _copy_str(&ctx->projname, s, alloc);
 }
 
 const char *get_cc(context_t *ctx)

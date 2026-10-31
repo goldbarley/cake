@@ -8,7 +8,7 @@
 
 #define _NULLCHAR_BUFFER_SPACE (2U)
 
-int find_cmd(const char *cmd)
+int find_cmd(const char *cmd, const alloccb_t *restrict alloc)
 {
 	if (!cmd)
 		return RET_ERR;
