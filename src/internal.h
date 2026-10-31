@@ -3,12 +3,10 @@
 
 #include "cake/cake.h"
 
-typedef struct cmd_buffer
+typedef struct context
 {
-	size_t head;
-	size_t tail;
-	size_t cap;
-	size_t size;
-} cmd_buffer_t;
+	char *cc;
+	char *projname;
+} context_t;
 
 #endif /* CAKE_INTERNAL_H_ */

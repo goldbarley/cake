@@ -1,11 +1,9 @@
+#include <stdarg.h>
 #include <stdio.h>
 #include <string.h>
 
 #include "cake/cake.h"
 #include "internal.h"
-
-char *cc = NULL;
-char *projname = NULL;
 
 static inline
 int _copy_str(char **restrict dst, const char *restrict src)
@@ -31,31 +29,83 @@ void _free_null(void **ptr)
 	*ptr = NULL;
 }
 
-int set_cc(const char *s)
+CAKE_FORMAT_PRINTF(4, 5)
+void check_ret(int ret, callback_t errcb, void* arg, const char *msg, ...)
 {
-	return _copy_str(&cc, s);
+	if (!msg)
+		if (ret != RET_OK && errcb)
+			errcb(arg);
+
+	if (ret == RET_OK)
+		return;
+
+	va_list args;
+	va_start(args, msg);
+	vfprintf(stderr, msg, args);
+	va_end(args);
+
+	if (errcb)
+		errcb(arg);
 }
 
-int set_projname(const char *s)
+int get_context(context_t **ctx)
 {
-	return _copy_str(&projname, s);
-}
+	if (!ctx)
+		return RET_ERR;
 
-void done(void)
-{
-	_free_null((void **) &cc);
-	_free_null((void **) &projname);
-}
+	*ctx = NULL;
+	context_t *_ctx = malloc(sizeof(struct context));
+	if (!_ctx)
+		return RET_ERR;
 
-int main(void)
-{
-	/* Test run. */
-	set_cc("cc");
-	set_projname("valkyrie");
-
-	fprintf(stdout, "%s %s\n", cc, projname);
-
-	done();
+	*ctx = _ctx;
 
 	return RET_OK;
+}
+
+int set_cc(context_t *restrict ctx, const char *restrict s)
+{
+	return _copy_str(&ctx->cc, s);
+}
+
+int set_projname(context_t *restrict ctx, const char *restrict s)
+{
+	return _copy_str(&ctx->projname, s);
+}
+
+const char *get_cc(context_t *ctx)
+{
+	return ctx->cc;
+}
+
+const char *get_projname(context_t *ctx)
+{
+	return ctx->projname;
+}
+
+int add_cmdargs(const char **args, cmdarg_t *argv, size_t argc)
+{
+	if (!args || !argv)
+		return RET_ERR;
+
+	for (size_t i = 0; i < argc; ++i)
+	{
+		/*
+		 * const char * is casted to char * here.
+		 * This will cause problems.
+		 *
+		 * FIXME: Find a solution.
+		 */
+		argv[i].s = (char *) args[i];
+		argv[i].len = strlen(args[i]);
+	}
+
+	return RET_OK;
+}
+
+void done(context_t *ctx)
+{
+	_free_null((void **) &ctx->cc);
+	_free_null((void **) &ctx->projname);
+	_free_null((void **) &ctx);
 }
